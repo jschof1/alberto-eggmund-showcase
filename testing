@@ -1,0 +1,104 @@
+// import { Meta } from '@/layout/Meta';
+// import { Main } from '@/templates/Main';
+import React, { useState, useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+import Airtable from 'airtable';
+import Link from 'next/link';
+import Nav from './Nav';
+import AnimationImg from '../../public/assets/images/animation.png';
+
+const Index = () => {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const base = new Airtable({ apiKey: 'keyCDhBnEvApVz4Z6' }).base(
+      'app6L8ES4FTPA0CWc'
+    );
+
+    const table = base('Animation');
+    table
+      .select({
+        view: 'Grid view',
+      })
+      .eachPage((records, fetchNextPage) => {
+        setData(records);
+        fetchNextPage();
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <h1> Loading... </h1>;
+
+  // if it contains the object key called 'exclude' then remove it from teh array
+  const filteredData = data.filter((item) => !item.fields.exclude);
+
+  // console.log(filteredData);
+
+  const getTitle = filteredData.map((a) => {
+    return a.fields.Title;
+  });
+
+  const getGifs = filteredData.map((a) => {
+    const gifs = Object.values(a.fields)[1];
+    return gifs;
+  });
+
+  const finalGifs = getGifs?.map((a) => {
+    // return <img id="animated" src={a[0]?.url} alt="still" />;
+    return a[0]?.url;
+  });
+
+  const getStill = filteredData.map((a) => {
+    const still = Object.values(a.fields)[2];
+    // console.log(still);
+    return still;
+  });
+
+  const finalStill = getStill?.map((a) => {
+    return a[0]?.url;
+  });
+
+  const getLarge = filteredData.map((a) => {
+    const large = Object.values(a.fields)[3];
+    return large;
+  });
+
+  // const newLocal = "../large-images/animation.html#2022-SHOWREEL";
+  return (
+    <>
+      <div className="">
+      <Nav name={AnimationImg} class="h14" />
+      </div>
+      <div className="container">
+        <div id="giflist" className="clearfix">
+          <div className="flex flex-wrap overflow-hidden sm:-mx-3">
+            {removeExcluded.map((a, i) => (
+              <div className="w-1/4 overflow-hidden sm:my-3 sm:px-3">
+                {/* <Link href={`/largeAnimation/#${getTitle[i].replaceAll(' ', '-')}`} passHref> */}
+                <Link href="/largeAnimations" passHref>
+                  <div key={uuidv4()} id="img_wrap" className="static">
+                    <img
+                      key={uuidv4()}
+                      id="static"
+                      src={finalGifs[i]}
+                      alt="gifs"
+                    />
+                    <img
+                      key={uuidv4()}
+                      id="animated"
+                      src={finalStill[i]}
+                      alt="still"
+                    />
+                  </div>
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default Index;
